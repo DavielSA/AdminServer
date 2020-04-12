@@ -78,7 +78,7 @@ _The technology used in this proyect:_
 
 ## Contributor 🖇️
 
-Daily Miranda Pardo[dailymp](https://github.com/dailymp/)
+Daily Miranda Pardo [dailymp](https://github.com/dailymp/)
 
 ## Wiki 📖
 
