@@ -89,9 +89,9 @@ Puedes encontrar mucho más de cómo utilizar este proyecto en nuestra [Wiki](ur
 undefined
 
 
-## Autores ✒️
+## Authors ✒️
 
-_Menciona a todos aquellos que ayudaron a levantar el proyecto desde sus inicios_
+_Thanks for all_
 
 * **Daviel Sánchez Almeida** - *Starter Work* - [dsa](https://github.com/DavielSA)
 * **Daily Miranda Pardo** - *Documentation and fixing translate* - [dailymp](https://github.com/dailymp/)
