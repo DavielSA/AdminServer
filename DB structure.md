@@ -1,0 +1,55 @@
+Create data structure.
+
+- [x] users. 
+     - id. int auto increment primarykey
+     - email. varchar(250) unique.
+     - hash. varchar(250) not null.
+     - name. varchar(250) null.
+     - role. int not null
+     - lastlogin datetime null
+     - fcreated datetime not null
+     - fupdate datetime not null
+- [x] users_history
+     - user_id int foreingkey
+     - timestamp primarykey
+     - login_ip varchar(10) null.
+- [x] users_auths
+     - user_id int foreingkey
+     - token varchar(250) primarykey
+     - renew_token varchar(250)
+     - expired_token datetime
+     - expired_token_renew datetime
+- [x] langs.
+     - id int primarykey
+     - name varchar(250) unique.
+     - flag longtext
+- [x] taxes.
+     - id int primarykey
+     - name varchar(250) unique.
+     - flag longtext
+- [x] services_types.
+     - id int primarykey
+     - name varchar(250) unique.
+- [x] services.
+     - id int primarykey
+     - type_id int foreingkey
+     - name varchar(250) unique.
+- [x] services_langs.
+     - lang_id int foreingkey
+     - service_id int foreingkey
+     - name varchar(250).
+     - description longtext.
+- [x] services_prices.
+     - service_id int foreingkey
+     - months int primarykey
+     - price double not null
+- [x] services_user.
+     - id. int auto increment primarykey
+     - service_id int foreingkey
+     - user_id int foreingkey
+     - months int primarykey
+     - price double not null
+
+I will add: this tables:
+- [] posts:
+     - id. int auto increment primarykey
