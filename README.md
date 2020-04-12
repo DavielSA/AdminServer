@@ -78,11 +78,11 @@ _The technology used in this proyect:_
 
 ## Contributor 🖇️
 
-Undefined
+Daily Miranda Pardo[dailymp](https://github.com/dailymp/)
 
 ## Wiki 📖
 
-Puedes encontrar mucho más de cómo utilizar este proyecto en nuestra [Wiki](url sin definir)
+You can find more for how to use this proyect in we [Wiki](url sin definir)
 
 ## Version 0.1 📌
 
