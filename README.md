@@ -97,10 +97,9 @@ _Thanks for all_
 * **Daily Miranda Pardo** - *Documentation and fixing translate* - [dailymp](https://github.com/dailymp/)
 
 
-## Licencia 📄
+## Licence 📄
 
-Este proyecto está bajo la Licencia (-)(-) - mira el archivo [LICENSE.md](LICENSE.md) para detalles
-
+This project is under licence by GNU GENERAL PUBLIC LICENSE - see the file [LICENSE.md](LICENSE.md) for more details.
 
 ---
-⌨️ con ❤️ por [dsa](https://github.com/DavielSA) 😊
+⌨️ with ❤️ by [dsa](https://github.com/DavielSA) 😊
