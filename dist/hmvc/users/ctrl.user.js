@@ -8,12 +8,13 @@ const dUser_1 = __importDefault(require("./dUser"));
 const HttpCode_1 = require("./../../libs/HttpCode");
 const ResponseString_1 = require("./../../libs/ResponseString");
 const Auth_1 = __importDefault(require("./../../libs/Auth"));
+const dUserHistory_1 = __importDefault(require("./dUserHistory"));
 class User {
     constructor() {
         this.router = express_1.Router();
         this.router.post("/register", this.Register);
-        this.router.post("/login", this.Login);
-        this.router.get("/logout", this.Logout);
+        this.router.post("/user/login", this.Login);
+        this.router.get("/user/logout", Auth_1.default.Verify, this.Logout);
     }
     /**
      * Method to create a new user.
@@ -27,7 +28,8 @@ class User {
                 return res.status(HttpCode_1.HttpCode.INVALID_DATA).send(response);
             const entity = response.item;
             // Check email not exist in db. If Exist is duplicate users
-            dUser_1.default.GetOne({ email: entity.email }, (exist) => {
+            dUser_1.default.Get({ email: entity.email }, (exist) => {
+                exist.item = (exist.item) ? exist.item[0] : undefined;
                 if (exist.error.length > 0 || exist.item) {
                     response.error.push(ResponseString_1.ResponseString.DUPLICATE_USER);
                     delete response.item.hash;
@@ -57,12 +59,12 @@ class User {
         if (response.error.length > 0)
             return res.status(HttpCode_1.HttpCode.INVALID_DATA).send(response);
         dUser_1.default.GetLogin(response, response.item.email, response.item.password, (r) => {
-            if (r.error.length > 0) {
-                delete r.item.hash;
-                delete r.item.salt;
+            if (r.error.length > 0 || !r.item) {
                 return res.status(HttpCode_1.HttpCode.OK).send(r);
             }
             r.item = Auth_1.default.MakeToken(response.item);
+            const ip = req.connection.remoteAddress;
+            dUserHistory_1.default.Create(ip, r.item.user_id);
             return res.status(HttpCode_1.HttpCode.OK).send(response);
         });
     }

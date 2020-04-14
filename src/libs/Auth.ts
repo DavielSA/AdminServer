@@ -1,8 +1,10 @@
 import bcryptjs from "bcryptjs";
 import { Request, Response } from "express";
-import jsonwebtoken, { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
-import Logs from "./../libs/logs";
+import jsonwebtoken, { JsonWebTokenError, TokenExpiredError, decode } from "jsonwebtoken";
+import { ResponseG } from './../bd/configFields';
 import AuthToken, { Token } from "./../bd/auth_token";
+import logs from "./../libs/logs";
+import mUser from './../hmvc/users/mUser';
 
 class Auth {
     public privateKey: string;
@@ -20,12 +22,12 @@ class Auth {
     public GetHash(password: string, callback: (e: boolean, r: AuthEntity | any) => void) {
         bcryptjs.genSalt(10, (err: any, salt: string) => {
             if (err) {
-                Logs.Log(err);
+                logs.Log(err);
                 return callback(true, err);
             }
             bcryptjs.hash(password, salt, (er: any, result: string) => {
                 if (er) {
-                    Logs.Log(er);
+                    logs.Log(er);
                     return callback(true, er);
                 }
                 callback(false, { salt, hash: result });
@@ -43,7 +45,7 @@ class Auth {
     public VerifyHash(password: string, salt: string, callback: (e: boolean, r: string) => void) {
         bcryptjs.hash(password, salt, (err: any, result: string) => {
             if (err) {
-                Logs.Log(err);
+                logs.Log(err);
                 return callback(true, undefined);
             }
             callback(false, result);
@@ -55,33 +57,43 @@ class Auth {
      * Make token with entity user using private key defined in .env PRIVATEKEY
      * @param mUser Entity of user
      */
-    public MakeToken(mUser: any): Token {
+    public MakeToken(user: mUser): Token {
         try {
             const timeToExpires: number = (86400 * 1825); // 86400 = 24hours | 1825 = 5 Years |  Expires in 5 Years
-            const tokenRenewWal: string = jsonwebtoken.sign(mUser, this.privateKey, {
+            const payload: any = {
+                "id": user.id,
+                "email": user.email,
+                "permissions": user.permissions
+            };
+            const tokenRenewWal: string = jsonwebtoken.sign(payload, this.privateKey, {
                 expiresIn: timeToExpires * 2 // Expires in 10 Years
             });
-            const tokenString: string = jsonwebtoken.sign(mUser, this.privateKey, {
+            const tokenString: string = jsonwebtoken.sign(payload, this.privateKey, {
                 expiresIn: timeToExpires // expires in 24 hours
             });
             const dToken = AuthToken;
             const TokenexpiresIn = new Date();
             const TokenrenewalexpiresIn = TokenexpiresIn;
+
             TokenexpiresIn.setHours(24);
             TokenrenewalexpiresIn.setHours(48);
+
             const item: Token = {
-                user: mUser._id,
+                user_id: user.id,
                 token: tokenString,
-                token_expiresIn: TokenexpiresIn,
-                tokenrenewal: tokenRenewWal,
-                tokenrenewal_expiresIn: TokenrenewalexpiresIn,
-                role: mUser.role,
+                renew_token: tokenRenewWal,
+                expired_token: TokenexpiresIn,
+                expired_token_renew: TokenrenewalexpiresIn,
+                permissions: user.permissions,
                 fcreated: (new Date())
             };
+
+            dToken.ClearTokens();
             dToken.Save(item);
+
             return item;
         } catch (e) {
-            Logs.Log(e);
+            logs.Log(e);
             return undefined;
         }
     }
@@ -100,11 +112,19 @@ class Auth {
         }
         jsonwebtoken.verify(token, privateKey, (err: JsonWebTokenError, decoded: any) => {
             if (err) {
-                Logs.Log(err);
+                logs.Log(err);
                 return res.status(401).send({});
             }
-            req.body._user_ = decoded;
-            next();
+            AuthToken.GetTokens(token, (r: ResponseG) => {
+                const ValidUser: boolean = (r.error && r.error.length > 0)
+                    || !r.item
+                    || r.item.length === 0 ;
+
+                if (ValidUser) return res.status(401).send({});
+
+                req.body._user_ = decoded;
+                next();
+            });
         });
     }
 
@@ -116,7 +136,7 @@ class Auth {
         const privateKey: string = process.env.PRIVATEKEY || "cHJpdmF0ZWtleQ==";
         jsonwebtoken.verify(token, privateKey, (err: JsonWebTokenError, decoded: any) => {
             if (err) {
-                Logs.Log(err);
+                logs.Log(err);
                 return false;
             }
             return true;

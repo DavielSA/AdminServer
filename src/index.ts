@@ -1,7 +1,7 @@
 // this will load app which contains our main structure and logic
 import { isNumber } from "util";
 import App from "./app";
-import Logs from "./libs/logs";
+import logs from "./libs/logs";
 import { Socket } from "./sock";
 
 // const app = new App();
@@ -17,5 +17,5 @@ const PORTSOCK: number = process.env.SOCK_PORT && isNumber(process.env.SOCK_PORT
 const socket: Socket = new Socket(PORTSOCK);
 
 App.app.listen(PORT, () => {
-    Logs.Log(`server started at http://localhost:${PORT}`);
+    logs.Log(`server started at http://localhost:${PORT}`);
 });
