@@ -1,8 +1,7 @@
-import { Collection, MongoError, ObjectId, UpdateWriteOpResult, WriteOpResult } from "mongodb";
+
 import db from "../../bd/db";
 import { ResponseG } from './../../bd/configFields';
 import mUser from './mUser';
-import logs from "./../../libs/logs";
 import Utils from "./../../libs/utils";
 import Auth, { AuthEntity } from './../../libs/Auth';
 import { ResponseString } from './../../libs/ResponseString';
@@ -11,7 +10,7 @@ class dUser extends db {
 
     constructor() {
         super();
-        this.dbName = "bd";
+        // this.dbName = "bd";
         this.tblName = "users";
         this.Connect();
     }
@@ -43,12 +42,7 @@ class dUser extends db {
         }
         if (!data.role) {
             r.info.push(ResponseString.OPTIONAL_FIELD.replace("{0}", "role"));
-            data.role = 0;
-        }
-
-        if (!data.surname) {
-            r.warning.push(ResponseString.OPTIONAL_FIELD.replace("{0}", "surname"));
-            data.surname = "";
+            data.permissions = 0;
         }
 
         data.status = 0;
@@ -103,18 +97,10 @@ class dUser extends db {
      * @param callback {function} this is function to response. Return object type ResponseG
      */
     public Get(where: mUser, callback: (result: ResponseG) => any): void {
-        this.table.find(where).next(
-            (e: MongoError, r: Collection) => this.CallSelect(callback, e, r)
-        );
-    }
+        const d: any = this.MakeWhere(where);
+        const sql: string = this.GetBasicSelect() + " WHERE " + d.where;
 
-    /**
-     * This method return first ocurrence for <where> argument.
-     * @param where {mUser} criteria to filter
-     * @param callback {function} this is function to response. Return object type ResponseG
-     */
-    public GetOne(where: mUser, callback: (result: ResponseG) => any) {
-        this.table.find(where).limit(1).next((e: MongoError, r: Collection) => this.CallSelect(callback, e, r));
+        this.GetQuery(sql, d.data, callback);
     }
 
     /**
@@ -125,22 +111,29 @@ class dUser extends db {
      * @param callback {void}. Function to response.
      */
     public GetLogin(Respuesta: ResponseG, sEmail: string, password: string, callback: (result: ResponseG) => any) {
-        this.table.find({ email: sEmail }).limit(1).next((e: MongoError, r: Collection) => {
-            if (e || !r) {
-                logs.Log(e);
+        const sql: string = this.GetBasicSelect() + " WHERE email = ? ";
+
+        this.GetQuery(sql, [sEmail], (r: ResponseG) => {
+            if (r.error.length > 0) {
+                Respuesta.error = [...Respuesta.error, ...r.error];
+                Respuesta.warning = [...Respuesta.warning, ...r.warning];
+                callback(Respuesta);
+            } else if (r.item.length < 1) {
                 Respuesta.error.push(ResponseString.USER_NOT_FOUND);
                 callback(Respuesta);
             } else {
-                const item: any = r;
+                const item: any = r.item[0];
                 Auth.VerifyHash(password, item.salt, (error: boolean, hash: string) => {
                     if (error) {
                         Respuesta.error.push(ResponseString.PASSWORD_HASH_ERROR);
                     } else {
                         if (item.hash !== hash)
                             Respuesta.error.push(ResponseString.PASWORD_INVALID);
-                        Respuesta.item = r;
-                        callback(Respuesta);
+                        delete item.hash;
+                        delete item.salt;
+                        Respuesta.item = item;
                     }
+                    callback(Respuesta);
                 });
             }
         });
@@ -152,16 +145,8 @@ class dUser extends db {
      * @param callback {function}  this is function to response. Return object type ResponseG
      */
     public Create(data: mUser, Respuesta: ResponseG, callback: (result: ResponseG) => any): void {
-        try {
-            this.table.insertOne(
-                data,
-                (e: MongoError, r: WriteOpResult) => this.CallBackInsert(callback, e, r)
-            );
-        } catch (e) {
-            logs.Log(e);
-            Respuesta.error.push(e);
-            callback(Respuesta);
-        }
+        const d: any = this.MakeInsert(data);
+        this.ExecQuery(d.sql, d.data, callback);
     }
 
     /**
@@ -171,24 +156,8 @@ class dUser extends db {
      */
     public Update(data: mUser, callback: (result: ResponseG) => any): void {
         const Respuesta: ResponseG = this.GetResponseEmpty();
-
-        try {
-            const Id: ObjectId = new ObjectId(data._id);
-            delete data._id;
-            this.table.findOne({ _id: Id }, (err: MongoError, result: any) => {
-                if (err) {
-                    throw new Error(ResponseString.NOT_FOUND);
-                }
-                this.table.update(
-                    { _id: Id }, data,
-                    (e: MongoError, r: WriteOpResult) => this.CallUpdate(callback, e, r));
-            });
-
-        } catch (e) {
-            logs.Log(e);
-            Respuesta.error.push(e);
-            callback(Respuesta);
-        }
+        const d: any = this.MakeUpdate(data, { id: data.id });
+        this.ExecQuery(d.sql, d.data, callback);
     }
 
     /**
@@ -196,16 +165,15 @@ class dUser extends db {
      */
     public DefaultEntity(): mUser {
         return {
-            _id: undefined,
+            id: undefined,
             email: undefined,
             hash: undefined,
             salt: undefined,
-            role: 0,
             name: undefined,
-            status: undefined,
-            surname: undefined,
-            fupdate: new Date(),
+            permissions: undefined,
+            lastlogin: new Date(),
             fcreated: new Date(),
+            fupdate: new Date()
         };
     }
 }

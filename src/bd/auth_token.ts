@@ -1,39 +1,50 @@
-import { Collection, MongoError, ObjectID } from "mongodb";
-import logs from "./../libs/logs";
+
 import bd from "./db";
+import { ResponseG } from "./configFields";
 
 export interface Token {
-    user: ObjectID;
+    user_id: number;
     token: string;
-    token_expiresIn: Date;
-    tokenrenewal: string;
-    tokenrenewal_expiresIn: Date;
-    role: number;
+    renew_token: string;
+    expired_token: Date;
+    expired_token_renew: Date;
+    permissions: number;
     fcreated: Date;
 }
 class AuthToken extends bd {
     constructor() {
         super();
-        this.dbName = "bd";
-        this.tblName = "auth_token";
+        // this.dbName = "bd";
+        this.tblName = "users_auths";
         this.Connect();
     }
 
     public Save(token: Token) {
-        this.table.insertOne(token, (err: MongoError, result: any) => {
-            if (err) {
-                logs.Log(err);
-            }
+        const d:any =this.MakeInsert(token);
+        this.ExecQuery(d.sql,d.data,(r:ResponseG) => {
+            // tslint:no-empty
         });
     }
-    public GetTokens(token: string, callback: any) {
-        const fecha: Date = new Date();
-        this.table.findOne({ token, token_expiresIn: { $gte: fecha } }, (err: MongoError, result: Collection) => {
-            callback(
-                err ? true : false,
-                err ? err : result
-            );
+
+    /**
+     * Method for delete all token expired
+     */
+    public ClearTokens() {
+        const sql : string = this.GetBasicDelete() + " expired_token=?";
+        this.ExecQuery(sql,[(new Date())], (r:ResponseG) => {
+            // tslint:no-empty
         });
+    }
+
+    /**
+     *
+     * @param token {string} token string
+     * @param callback {void} function to response callback
+     */
+    public GetTokens(token: string, callback: (result: ResponseG) => any) {
+        const fecha: Date = new Date();
+        const query:string = this.GetBasicSelect() + " WHERE expired_token > ? AND token = ? ; ";
+        this.GetQuery(query,[fecha,token], callback);
     }
 
 }

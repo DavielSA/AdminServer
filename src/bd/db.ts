@@ -1,17 +1,20 @@
-import * as mongodb from "mongodb";
+import mysql, { MysqlError, FieldInfo } from "mysql";
 import logs from "./../libs/logs";
 
 import { ResponseG } from './configFields';
-import { WriteOpResult } from "mongodb";
 
+interface iConnectionObject {
+    host: string;
+    user: string;
+    password: string;
+    database: string;
+}
 export default class DB {
 
-    protected con: mongodb.Db;
+    protected con: mysql.Connection;
     protected dbName: string;
     protected tblName: string;
-    protected table: mongodb.Collection;
-    private url: string;
-    private pool: mongodb.MongoClient;
+    private connectionObject: iConnectionObject;
 
     /**
      * Instanciamos la clase. Aquí obtenemos de .env
@@ -19,43 +22,125 @@ export default class DB {
      * si no existe usamos por default "mongodb://localhost:27017"
      */
     constructor() {
-        this.url = process.env.DB_URL || "mongodb://localhost:27017";
+        this.dbName = process.env.dbname || "adminserverdb";
+        this.connectionObject = {
+            host: process.env.host || "localhost",
+            user: process.env.dbuser || "root",
+            password: process.env.dbpass || "",
+            database: this.dbName
+        };
     }
-
-    /**
-     * In this method close the connection
-     */
-    public Close() {
-        this.pool.close();
-    }
-
 
     /**
      * In this method connect to database and defin the pool conextion, the conection to schema
      * and the access to table.
      */
     protected Connect() {
-        this.pool = new mongodb.MongoClient(this.url, {});
-
-        this.pool.connect().then((client: mongodb.MongoClient) => {
-            if (this.pool.isConnected()) {
-                logs.Log(`Connect to database : ${this.url}`);
-            }
-            this.con = this.pool.db(this.dbName);
-            this.table = this.con.collection(this.tblName);
-        });
-
+        this.connectionObject.database = this.dbName;
+        this.con = mysql.createConnection(this.connectionObject);
+        this.con.connect();
     }
 
+    /**
+     * This method return simple select. Example:
+     *      SELECT * FROM `DataBaseName`.`TableName`
+     */
+    protected GetBasicSelect(): string {
+        return `SELECT * FROM \`${this.dbName}\`.\`${this.tblName}\` `;
+    }
+
+    /**
+     * This method return simple delete. Example:
+     *      DELETE FROM `DataBaseName`.`TableName` WHERE
+     */
+    protected GetBasicDelete():string {
+        return `DELETE FROM \`${this.dbName}\`.\`${this.tblName}\` WHERE `;
+    }
+
+    /**
+     * Generic method for create a where string and data array.
+     * @param data {any} Object with data to generate where.
+     * @return {object} Return object with string where and array of any data
+     */
+    protected MakeWhere(data: any): any {
+        const fields: string[] = Object.keys(data).map((o) => data[o] ? `\`${o}\` = ?` : undefined).filter((o) => o);
+        const aWhere: string[] = Object.keys(data).map((o) => data[o]).filter((o) => o);
+        return {
+            where: fields.join(" AND "),
+            data: aWhere
+        }
+    }
+
+    /**
+     * Generic method for create a insert query and data.
+     * @param data {any} Object with data to generate data to insert.
+     * @return {object} Return object with string sql and array of any data
+     */
+    protected MakeInsert(data: any): any {
+        const fields: string[] = Object.keys(data).map((o) => data[o] ? `\`${o}\`` : undefined).filter((o) => o);
+        const aWhere: string[] = Object.keys(data).map((o) => data[o]).filter((o) => o);
+        const fieldsWhere: string[] = Array.from({ length: fields.length }, (_) => `?`);
+        const sql: string = `INSERT INTO \`${this.dbName}\`.\`${this.tblName}\` (${fields.join(',')}) VALUES (${fieldsWhere.join(',')}) `;
+
+        return {
+            sql,
+            data: aWhere
+        }
+    }
+
+    /**
+     * Generic method for create a insert query and data.
+     * @param data {any} Object with data to generate fields to update.
+     * @param dataWhere {any} Object with data to generate where.
+     * @return {object} Return object with string sql and array of any data
+     */
+    protected MakeUpdate(data: any, dataWhere: any) {
+        const fields: string[] = Object.keys(data).map((o) => data[o] ? `\`${o}\` = ?` : undefined).filter((o) => o);
+        const where: string[] = Object.keys(dataWhere).map((o) => data[o] ? `\`${o}\` = ?` : undefined).filter((o) => o);
+        const aData: string[] = [...Object.keys(data).map((o) => data[o]).filter((o) => o), ...Object.keys(dataWhere).map((o) => data[o]).filter((o) => o)];
+        const sql = `UPDATE \`${this.dbName}\`.\`${this.tblName}\` SET ${fields.join(',')} WHERE ${where.join(' AND ')}`;
+
+        return {
+            sql,
+            data: aData
+        }
+    }
+
+    /**
+     * GetQuery. Method to execute query and return some rows (only select).
+     * @param sql {string} Query to execute
+     * @param argument {array} Array of element to filters
+     * @param callback {void} Function to response callback.
+     * @returns {void}
+     */
+    protected GetQuery(sql: string, argument: any[], callback: (Response: ResponseG) => any) {
+        this.con.query(sql, argument, (error: MysqlError, results, fields: FieldInfo[]) => {
+            this.CallSelect(callback, error, results);
+        });
+    }
+
+    /**
+     * ExecQuery. Method to execute query for insert, update or delete.
+     * @param sql {string} Query to execute
+     * @param argument {array} Array of element to filters
+     * @param callback {void} Function to response callback.
+     * @returns {void}
+     */
+    protected ExecQuery(sql: string, argument: any[], callback: (Response: ResponseG) => any) {
+        this.con.query(sql, argument, (error: MysqlError, results, fields: FieldInfo[]) => {
+            this.CallBackInsert(callback, error, results);
+        });
+        // this.con.end();
+    }
 
     /**
      * This generic method execute when whee need get one or more items of entity
-     * @param callback Function to execute when finished
-     * @param e When exist error this var is declared
-     * @param r When the sellect is sussefully this contains data
+     * @param callback {void} Function to execute when finished
+     * @param e {MysqlError} When exist error this var is declared
+     * @param r {any} When the sellect is sussefully this contains data
      */
-    protected CallSelect(callback: (Respuesta: any) => any,
-        e: mongodb.MongoError, r: mongodb.Collection) {
+    protected CallSelect(callback: (Respuesta: ResponseG) => any,
+        e: MysqlError, r: any) {
         const Respuesta: ResponseG = this.GetResponseEmpty();
         if (e) {
             logs.Log(e);
@@ -69,12 +154,12 @@ export default class DB {
 
     /**
      * This generic method execute when whee need insert one or more items
-     * @param callback Function to execute when finished
-     * @param e When exist error this var is declared
-     * @param r When the insert is sussefully this contains
+     * @param callback {void} Function to execute when finished
+     * @param e {MysqlError} When exist error this var is declared
+     * @param r {any} When the insert is sussefully this contains
      */
     protected CallBackInsert(callback: (Respuesta: ResponseG) => ResponseG,
-        e: mongodb.MongoError, r: WriteOpResult) {
+        e: MysqlError, r: any) {
         const Respuesta: ResponseG = this.GetResponseEmpty();
 
         if (e) {
@@ -89,12 +174,12 @@ export default class DB {
 
     /**
      * This generic method execute when whee need update one or more items
-     * @param callback Function to execute when finished
-     * @param e When exist error this var is declared
-     * @param r When the insert is sussefully this contains
+     * @param callback {void} Function to execute when finished
+     * @param e {MysqlError} When exist error this var is declared
+     * @param r {any} When the insert is sussefully this contains
      */
     protected CallUpdate(callback: (Respuesta: ResponseG) => ResponseG,
-        e: mongodb.MongoError, r: WriteOpResult) {
+        e: MysqlError, r: any) {
         const Respuesta: ResponseG = this.GetResponseEmpty();
 
         if (e) {

@@ -7,6 +7,7 @@ import { HttpCode } from './../../libs/HttpCode';
 import { ResponseString } from './../../libs/ResponseString';
 import Auth from './../../libs/Auth';
 import { ResponseG } from "./../../bd/configFields";
+import dUserHistory from "./dUserHistory";
 
 
 class User {
@@ -14,8 +15,8 @@ class User {
     constructor() {
         this.router = Router();
         this.router.post("/register", this.Register);
-        this.router.post("/login", this.Login);
-        this.router.get("/logout", this.Logout);
+        this.router.post("/user/login", this.Login);
+        this.router.get("/user/logout",Auth.Verify,this.Logout);
     }
 
     /**
@@ -30,7 +31,9 @@ class User {
                 return res.status(HttpCode.INVALID_DATA).send(response);
             const entity: Model = response.item;
             // Check email not exist in db. If Exist is duplicate users
-            Data.GetOne({ email: entity.email } as Model, (exist: ResponseG) => {
+            Data.Get({ email: entity.email } as Model, (exist: ResponseG) => {
+                exist.item = (exist.item) ? exist.item[0] : undefined;
+
                 if (exist.error.length > 0 || exist.item) {
                     response.error.push(ResponseString.DUPLICATE_USER);
                     delete response.item.hash;
@@ -63,12 +66,13 @@ class User {
             return res.status(HttpCode.INVALID_DATA).send(response);
 
         Data.GetLogin(response, response.item.email, response.item.password, (r: ResponseG) => {
-            if (r.error.length > 0) {
-                delete r.item.hash;
-                delete r.item.salt;
+            if (r.error.length > 0 || !r.item) {
                 return res.status(HttpCode.OK).send(r);
             }
             r.item = Auth.MakeToken(response.item);
+            const ip: string = req.connection.remoteAddress;
+            dUserHistory.Create(ip,r.item.user_id);
+
             return res.status(HttpCode.OK).send(response);
         });
     }
