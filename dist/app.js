@@ -17,6 +17,8 @@ const bodyParser = __importStar(require("body-parser"));
 const cors_1 = __importDefault(require("cors"));
 // Import file routers
 const router_1 = __importDefault(require("./hmvc/router"));
+const HttpCode_1 = require("./libs/HttpCode");
+const ResponseString_1 = require("./libs/ResponseString");
 class App {
     /**
      * Constructor of class
@@ -46,7 +48,13 @@ class App {
     JsonMalFormed(error, req, res, next) {
         // Catch json error. Cuando envían un json mal formado.
         if (error instanceof SyntaxError) {
-            res.status(400).send("JSON malformed");
+            const r = {
+                error: [ResponseString_1.ResponseString.JSON_MALFORMED],
+                warning: [],
+                info: [],
+                item: undefined
+            };
+            res.status(HttpCode_1.HttpCode.BAD_REQUEST).send(r);
             return;
         }
         next();

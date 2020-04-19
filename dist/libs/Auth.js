@@ -2,12 +2,18 @@
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const logs_1 = __importDefault(require("./../libs/logs"));
+const jsonwebtoken_1 = __importStar(require("jsonwebtoken"));
 const auth_token_1 = __importDefault(require("./../bd/auth_token"));
-const logs_2 = __importDefault(require("./../libs/logs"));
+const logs_1 = __importDefault(require("./../libs/logs"));
 class Auth {
     constructor() {
         this.privateKey = process.env.PRIVATEKEY || "cHJpdmF0ZWtleQ==";
@@ -114,8 +120,7 @@ class Auth {
                     || r.item.length === 0;
                 if (ValidUser)
                     return res.status(401).send({});
-                req.body._user_ = decoded;
-                logs_2.default.Log(req.body._user_);
+                req.user = jsonwebtoken_1.decode;
                 next();
             });
         });

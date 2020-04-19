@@ -6,6 +6,7 @@ export  const ResponseString:any = {
     OPTIONAL_FIELD: "Field {0} is optional",
     PASSWORD_HASH_ERROR: "Error make secure store password",
     PASWORD_INVALID: "Invalid Password",
-    NOT_FOUND : "Not FOUND"
+    NOT_FOUND : "Not FOUND",
+    JSON_MALFORMED : "JSON malformed"
 }
 

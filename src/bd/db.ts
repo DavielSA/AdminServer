@@ -2,6 +2,7 @@ import mysql, { MysqlError, FieldInfo } from "mysql";
 import logs from "./../libs/logs";
 
 import { ResponseG } from './configFields';
+import { SQL } from './sql';
 
 interface iConnectionObject {
     host: string;
@@ -53,7 +54,7 @@ export default class DB {
      * This method return simple delete. Example:
      *      DELETE FROM `DataBaseName`.`TableName` WHERE
      */
-    protected GetBasicDelete():string {
+    protected GetBasicDelete(): string {
         return `DELETE FROM \`${this.dbName}\`.\`${this.tblName}\` WHERE `;
     }
 
@@ -62,11 +63,14 @@ export default class DB {
      * @param data {any} Object with data to generate where.
      * @return {object} Return object with string where and array of any data
      */
-    protected MakeWhere(data: any): any {
+    protected MakeWhere(data: any): SQL {
+        if (!data)
+            return { sql: "", data: [] };
+
         const fields: string[] = Object.keys(data).map((o) => data[o] ? `\`${o}\` = ?` : undefined).filter((o) => o);
         const aWhere: string[] = Object.keys(data).map((o) => data[o]).filter((o) => o);
         return {
-            where: fields.join(" AND "),
+            sql: fields.join(" AND "),
             data: aWhere
         }
     }
@@ -76,7 +80,10 @@ export default class DB {
      * @param data {any} Object with data to generate data to insert.
      * @return {object} Return object with string sql and array of any data
      */
-    protected MakeInsert(data: any): any {
+    protected MakeInsert(data: any): SQL {
+        if (!data)
+            return { sql: "", data: [] };
+
         const fields: string[] = Object.keys(data).map((o) => data[o] ? `\`${o}\`` : undefined).filter((o) => o);
         const aWhere: string[] = Object.keys(data).map((o) => data[o]).filter((o) => o);
         const fieldsWhere: string[] = Array.from({ length: fields.length }, (_) => `?`);
@@ -94,7 +101,10 @@ export default class DB {
      * @param dataWhere {any} Object with data to generate where.
      * @return {object} Return object with string sql and array of any data
      */
-    protected MakeUpdate(data: any, dataWhere: any) {
+    protected MakeUpdate(data: any, dataWhere: any): SQL {
+        if (!data)
+            return { sql: "", data: [] };
+
         const fields: string[] = Object.keys(data).map((o) => data[o] ? `\`${o}\` = ?` : undefined).filter((o) => o);
         const where: string[] = Object.keys(dataWhere).map((o) => data[o] ? `\`${o}\` = ?` : undefined).filter((o) => o);
         const aData: string[] = [...Object.keys(data).map((o) => data[o]).filter((o) => o), ...Object.keys(dataWhere).map((o) => data[o]).filter((o) => o)];
@@ -144,7 +154,7 @@ export default class DB {
         const Respuesta: ResponseG = this.GetResponseEmpty();
         if (e) {
             logs.Log(e);
-            Respuesta.error.push(e);
+            Respuesta.error.push(e.code);
         } else {
             Respuesta.item = r;
         }
@@ -164,7 +174,7 @@ export default class DB {
 
         if (e) {
             logs.Log(e);
-            Respuesta.error.push(e);
+            Respuesta.error.push(e.code);
         } else {
             Respuesta.item = r.result;
         }
@@ -184,7 +194,7 @@ export default class DB {
 
         if (e) {
             logs.Log(e);
-            Respuesta.error.push(e);
+            Respuesta.error.push(e.code);
         } else {
             Respuesta.item = r.result;
         }

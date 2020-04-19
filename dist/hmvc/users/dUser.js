@@ -89,7 +89,7 @@ class dUser extends db_1.default {
      */
     Get(where, callback) {
         const d = this.MakeWhere(where);
-        const sql = this.GetBasicSelect() + " WHERE " + d.where;
+        const sql = this.GetBasicSelect() + " WHERE " + d.sql;
         this.GetQuery(sql, d.data, callback);
     }
     /**

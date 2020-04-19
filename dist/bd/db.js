@@ -49,10 +49,12 @@ class DB {
      * @return {object} Return object with string where and array of any data
      */
     MakeWhere(data) {
+        if (!data)
+            return { sql: "", data: [] };
         const fields = Object.keys(data).map((o) => data[o] ? `\`${o}\` = ?` : undefined).filter((o) => o);
         const aWhere = Object.keys(data).map((o) => data[o]).filter((o) => o);
         return {
-            where: fields.join(" AND "),
+            sql: fields.join(" AND "),
             data: aWhere
         };
     }
@@ -62,6 +64,8 @@ class DB {
      * @return {object} Return object with string sql and array of any data
      */
     MakeInsert(data) {
+        if (!data)
+            return { sql: "", data: [] };
         const fields = Object.keys(data).map((o) => data[o] ? `\`${o}\`` : undefined).filter((o) => o);
         const aWhere = Object.keys(data).map((o) => data[o]).filter((o) => o);
         const fieldsWhere = Array.from({ length: fields.length }, (_) => `?`);
@@ -78,6 +82,8 @@ class DB {
      * @return {object} Return object with string sql and array of any data
      */
     MakeUpdate(data, dataWhere) {
+        if (!data)
+            return { sql: "", data: [] };
         const fields = Object.keys(data).map((o) => data[o] ? `\`${o}\` = ?` : undefined).filter((o) => o);
         const where = Object.keys(dataWhere).map((o) => data[o] ? `\`${o}\` = ?` : undefined).filter((o) => o);
         const aData = [...Object.keys(data).map((o) => data[o]).filter((o) => o), ...Object.keys(dataWhere).map((o) => data[o]).filter((o) => o)];
@@ -122,7 +128,7 @@ class DB {
         const Respuesta = this.GetResponseEmpty();
         if (e) {
             logs_1.default.Log(e);
-            Respuesta.error.push(e);
+            Respuesta.error.push(e.code);
         }
         else {
             Respuesta.item = r;
@@ -139,7 +145,7 @@ class DB {
         const Respuesta = this.GetResponseEmpty();
         if (e) {
             logs_1.default.Log(e);
-            Respuesta.error.push(e);
+            Respuesta.error.push(e.code);
         }
         else {
             Respuesta.item = r.result;
@@ -156,7 +162,7 @@ class DB {
         const Respuesta = this.GetResponseEmpty();
         if (e) {
             logs_1.default.Log(e);
-            Respuesta.error.push(e);
+            Respuesta.error.push(e.code);
         }
         else {
             Respuesta.item = r.result;

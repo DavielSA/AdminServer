@@ -17,7 +17,6 @@ class dUserHistory extends db {
      * This method open the schema and add argument <data>
      * @param loginip {string} IP client
      * @param userid {number} ID clients
-     * @param callback {function}  this is function to response. Return object type ResponseG
      */
     public Create(loginip: string, userid: number): void {
         const data: mUserHistory = {

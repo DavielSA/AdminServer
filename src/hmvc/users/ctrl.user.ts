@@ -8,7 +8,7 @@ import { ResponseString } from './../../libs/ResponseString';
 import Auth from './../../libs/Auth';
 import { ResponseG } from "./../../bd/configFields";
 import dUserHistory from "./dUserHistory";
-
+import logs from "./../../libs/logs";
 
 class User {
     public router: Router;

@@ -4,7 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const db_1 = __importDefault(require("./db"));
-const logs_1 = __importDefault(require("./../libs/logs"));
 class AuthToken extends db_1.default {
     constructor() {
         super();
@@ -25,7 +24,6 @@ class AuthToken extends db_1.default {
         const sql = this.GetBasicDelete() + " expired_token=?";
         this.ExecQuery(sql, [(new Date())], (r) => {
             // tslint:no-empty
-            logs_1.default.Log(r);
         });
     }
     /**

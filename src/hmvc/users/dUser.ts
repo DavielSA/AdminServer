@@ -1,6 +1,7 @@
 
 import db from "../../bd/db";
 import { ResponseG } from './../../bd/configFields';
+import { SQL } from './../../bd/sql';
 import mUser from './mUser';
 import Utils from "./../../libs/utils";
 import Auth, { AuthEntity } from './../../libs/Auth';
@@ -97,8 +98,8 @@ class dUser extends db {
      * @param callback {function} this is function to response. Return object type ResponseG
      */
     public Get(where: mUser, callback: (result: ResponseG) => any): void {
-        const d: any = this.MakeWhere(where);
-        const sql: string = this.GetBasicSelect() + " WHERE " + d.where;
+        const d: SQL = this.MakeWhere(where);
+        const sql: string = this.GetBasicSelect() + " WHERE " + d.sql;
 
         this.GetQuery(sql, d.data, callback);
     }
@@ -145,7 +146,7 @@ class dUser extends db {
      * @param callback {function}  this is function to response. Return object type ResponseG
      */
     public Create(data: mUser, Respuesta: ResponseG, callback: (result: ResponseG) => any): void {
-        const d: any = this.MakeInsert(data);
+        const d: SQL = this.MakeInsert(data);
         this.ExecQuery(d.sql, d.data, callback);
     }
 
@@ -156,7 +157,7 @@ class dUser extends db {
      */
     public Update(data: mUser, callback: (result: ResponseG) => any): void {
         const Respuesta: ResponseG = this.GetResponseEmpty();
-        const d: any = this.MakeUpdate(data, { id: data.id });
+        const d: SQL = this.MakeUpdate(data, { id: data.id });
         this.ExecQuery(d.sql, d.data, callback);
     }
 

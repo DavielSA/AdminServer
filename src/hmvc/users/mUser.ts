@@ -1,12 +1,12 @@
 
 interface mUser {
     id: number;
-    email:string;
-    hash:string;
-    salt:string;
+    email: string;
+    hash: string;
+    salt: string;
     name: string;
-    permissions:number;
-    lastlogin:Date;
+    permissions: number;
+    lastlogin: Date;
     fcreated: Date;
     fupdate: Date;
 }

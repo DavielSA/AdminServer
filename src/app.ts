@@ -7,6 +7,10 @@ import cors from "cors";
 // Import file routers
 import routes from "./hmvc/router";
 
+import {HttpCode} from './libs/HttpCode';
+import {ResponseString} from './libs/ResponseString';
+import { ResponseG } from './bd/configFields';
+
 class App {
     public app: express.Application;
 
@@ -44,7 +48,13 @@ class App {
     private JsonMalFormed(error: any, req: any, res: any, next: any): void {
         // Catch json error. Cuando envían un json mal formado.
         if (error instanceof SyntaxError) {
-            res.status(400).send("JSON malformed");
+            const r : ResponseG = {
+                error: [ResponseString.JSON_MALFORMED],
+                warning: [],
+                info: [],
+                item: undefined
+            }
+            res.status(HttpCode.BAD_REQUEST).send(r);
             return;
         }
         next();

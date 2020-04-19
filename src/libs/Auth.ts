@@ -104,7 +104,7 @@ class Auth {
      * @param res Respose express
      * @param next function to continue or not
      */
-    public Verify(req: Request, res: Response, next: any) {
+    public Verify(req: Request | any, res: Response, next: any) {
         const token: string = req.headers.authorization;
         const privateKey: string = process.env.PRIVATEKEY || "cHJpdmF0ZWtleQ==";
         if (!token) {
@@ -121,8 +121,7 @@ class Auth {
                     || r.item.length === 0 ;
 
                 if (ValidUser) return res.status(401).send({});
-
-                req.body._user_ = decoded;
+                req.user = decode;
                 next();
             });
         });
