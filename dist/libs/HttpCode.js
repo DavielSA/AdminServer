@@ -6,6 +6,7 @@ exports.HttpCode = {
     NOT_FOUND: 404,
     OK: 202,
     UNAUTHORIZED: 401,
-    MOVED_LINK: 301
+    MOVED_LINK: 301,
+    BAD_REQUEST: 400
 };
 //# sourceMappingURL=HttpCode.js.map

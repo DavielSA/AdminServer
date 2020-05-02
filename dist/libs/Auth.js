@@ -2,11 +2,18 @@
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const logs_1 = __importDefault(require("./../libs/logs"));
+const jsonwebtoken_1 = __importStar(require("jsonwebtoken"));
 const auth_token_1 = __importDefault(require("./../bd/auth_token"));
+const logs_1 = __importDefault(require("./../libs/logs"));
 class Auth {
     constructor() {
         this.privateKey = process.env.PRIVATEKEY || "cHJpdmF0ZWtleQ==";
@@ -53,13 +60,18 @@ class Auth {
      * Make token with entity user using private key defined in .env PRIVATEKEY
      * @param mUser Entity of user
      */
-    MakeToken(mUser) {
+    MakeToken(user) {
         try {
             const timeToExpires = (86400 * 1825); // 86400 = 24hours | 1825 = 5 Years |  Expires in 5 Years
-            const tokenRenewWal = jsonwebtoken_1.default.sign(mUser, this.privateKey, {
+            const payload = {
+                "id": user.id,
+                "email": user.email,
+                "permissions": user.permissions
+            };
+            const tokenRenewWal = jsonwebtoken_1.default.sign(payload, this.privateKey, {
                 expiresIn: timeToExpires * 2 // Expires in 10 Years
             });
-            const tokenString = jsonwebtoken_1.default.sign(mUser, this.privateKey, {
+            const tokenString = jsonwebtoken_1.default.sign(payload, this.privateKey, {
                 expiresIn: timeToExpires // expires in 24 hours
             });
             const dToken = auth_token_1.default;
@@ -68,14 +80,15 @@ class Auth {
             TokenexpiresIn.setHours(24);
             TokenrenewalexpiresIn.setHours(48);
             const item = {
-                user: mUser._id,
+                user_id: user.id,
                 token: tokenString,
-                token_expiresIn: TokenexpiresIn,
-                tokenrenewal: tokenRenewWal,
-                tokenrenewal_expiresIn: TokenrenewalexpiresIn,
-                role: mUser.role,
+                renew_token: tokenRenewWal,
+                expired_token: TokenexpiresIn,
+                expired_token_renew: TokenrenewalexpiresIn,
+                permissions: user.permissions,
                 fcreated: (new Date())
             };
+            dToken.ClearTokens();
             dToken.Save(item);
             return item;
         }
@@ -101,8 +114,15 @@ class Auth {
                 logs_1.default.Log(err);
                 return res.status(401).send({});
             }
-            req.body._user_ = decoded;
-            next();
+            auth_token_1.default.GetTokens(token, (r) => {
+                const ValidUser = (r.error && r.error.length > 0)
+                    || !r.item
+                    || r.item.length === 0;
+                if (ValidUser)
+                    return res.status(401).send({});
+                req.user = jsonwebtoken_1.decode;
+                next();
+            });
         });
     }
     /**

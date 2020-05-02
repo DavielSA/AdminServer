@@ -51,5 +51,15 @@ Create data structure.
      - price double not null
 
 I will add: this tables:
-- [] posts:
-     - id. int auto increment primarykey
+- [ ] posts:
+     - id int auto increment primarykey
+     - title varchar[255] 
+     - contents varchar[50000]
+     - created_at datetime
+     - edited_at datetime
+- [ ]  latest_jobs:
+     - id int auto increment primarykey
+     - title varchar[255] 
+     - description varchar[50000]
+     - image object_64
+     

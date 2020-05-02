@@ -17,8 +17,7 @@ const PORTSOCK = process.env.SOCK_PORT && util_1.isNumber(process.env.SOCK_PORT)
     ? Number(process.env.SOCK_PORT)
     : 3001;
 const socket = new sock_1.Socket(PORTSOCK);
-const server = app_1.default.app.listen(PORT, () => {
+app_1.default.app.listen(PORT, () => {
     logs_1.default.Log(`server started at http://localhost:${PORT}`);
 });
-module.exports = { app: server, socket };
 //# sourceMappingURL=index.js.map

@@ -28,6 +28,12 @@ class Utils {
             const expression = /\S+@\S+/;
             return expression.test(String(email).toLowerCase());
         };
+        this.UnionResponse = (a, b) => {
+            a.error = this.UnionArray(a.error, b.error);
+            a.warning = this.UnionArray(a.warning, b.warning);
+            a.info = this.UnionArray(a.info, b.info);
+            return a;
+        };
     }
 }
 exports.default = new Utils();

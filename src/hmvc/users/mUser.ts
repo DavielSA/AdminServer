@@ -1,14 +1,12 @@
-import { ObjectID } from "mongodb";
 
 interface mUser {
-    _id: ObjectID;
-    email:string;
-    hash:string;
-    salt:string;
+    id: number;
+    email: string;
+    hash: string;
+    salt: string;
     name: string;
-    role:number;
-    surname:string;
-    status:number;
+    permissions: number;
+    lastlogin: Date;
     fcreated: Date;
     fupdate: Date;
 }
