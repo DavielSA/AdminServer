@@ -40,6 +40,12 @@ _In this moment not development any test, but in future we add the test, and for
 npm test
 ```
 
+## Run in background ⚙️
+_For run with background service you create a folder for logs run this. (in my case the folder of log is */home/dhmaker/log/* _
+```
+nohup npm start > /home/dhmaker/log/api.log 2>&1 &
+```
+
 ## Deployment 📦
 
 _For deployment you can install forever. This utility install and configure one service to watch app crash exception for stop and start automaticaly._
