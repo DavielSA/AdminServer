@@ -96,6 +96,37 @@ export default class DB {
     }
 
     /**
+     * Insert multiple rows
+     * @param data {any[]} Collections of data to insert in database
+     * @returns {SQL} Return string sql and data array with multple insert structure
+     */
+    protected MakeInsertMultiple(data: any[]): SQL {
+        /*
+        INSERT INTO
+            projects(name, start_date, end_date)
+        VALUES
+            ('AI for Marketing','2019-08-01','2019-12-31'),
+            ('ML for Sales','2019-05-15','2019-11-20');
+        */
+        if (!data)
+            return { sql: "", data: [] };
+
+        const fields: string[] = Object
+            .keys(data[0])
+            .map((o) => `\`${o}\``);
+
+        const aWhere: string[][] = data.map((dat: any) => (Object.keys(dat).map((o: string) => (dat[o] ? dat[o] : 'null'))));
+        const item : string[] =  Array.from({ length: fields.length}, (c) => "?");
+        const fieldsWhere : string[][] = Array.from( {length:data.length}, (c) => item);
+        const sql: string = `INSERT INTO \`${this.dbName}\`.\`${this.tblName}\` (${fields.join(',')}) VALUES ${fieldsWhere.map((c:string[]) => `(${c.join(',')})`).join(", ")} `;
+
+        return {
+            sql,
+            data: aWhere.length===1 ? aWhere[0] : aWhere
+        }
+    }
+
+    /**
      * Generic method for create a insert query and data.
      * @param data {any} Object with data to generate fields to update.
      * @param dataWhere {any} Object with data to generate where.
@@ -153,7 +184,7 @@ export default class DB {
         e: MysqlError, r: any) {
         const Respuesta: ResponseG = this.GetResponseEmpty();
         if (e) {
-            logs.Log(e);
+            logs.Error(e);
             Respuesta.error.push(e.code);
         } else {
             Respuesta.item = r;
@@ -171,12 +202,11 @@ export default class DB {
     protected CallBackInsert(callback: (Respuesta: ResponseG) => ResponseG,
         e: MysqlError, r: any) {
         const Respuesta: ResponseG = this.GetResponseEmpty();
-
         if (e) {
-            logs.Log(e);
+            logs.Error(e);
             Respuesta.error.push(e.code);
         } else {
-            Respuesta.item = r.result;
+            Respuesta.item = r;
         }
         callback(Respuesta);
     }
@@ -193,7 +223,7 @@ export default class DB {
         const Respuesta: ResponseG = this.GetResponseEmpty();
 
         if (e) {
-            logs.Log(e);
+            logs.Error(e);
             Respuesta.error.push(e.code);
         } else {
             Respuesta.item = r.result;
@@ -201,6 +231,11 @@ export default class DB {
         callback(Respuesta);
     }
 
+    protected IfContainsReplace(str: string, find: string, replace: string) {
+        return (str.search(find) >= 0)
+            ? str.replace(find, replace)
+            : str;
+    }
 
     /**
      * Create empty ResponseG default

@@ -1,4 +1,4 @@
 export interface SQL {
     sql : string;
-    data : any;
+    data : any | any[];
 }

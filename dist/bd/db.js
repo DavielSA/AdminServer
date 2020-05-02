@@ -76,6 +76,33 @@ class DB {
         };
     }
     /**
+     * Insert multiple rows
+     * @param data {any[]} Collections of data to insert in database
+     * @returns {SQL} Return string sql and data array with multple insert structure
+     */
+    MakeInsertMultiple(data) {
+        /*
+        INSERT INTO
+            projects(name, start_date, end_date)
+        VALUES
+            ('AI for Marketing','2019-08-01','2019-12-31'),
+            ('ML for Sales','2019-05-15','2019-11-20');
+        */
+        if (!data)
+            return { sql: "", data: [] };
+        const fields = Object
+            .keys(data[0])
+            .map((o) => `\`${o}\``);
+        const aWhere = data.map((dat) => (Object.keys(dat).map((o) => (dat[o] ? dat[o] : 'null'))));
+        const item = Array.from({ length: fields.length }, (c) => "?");
+        const fieldsWhere = Array.from({ length: data.length }, (c) => item);
+        const sql = `INSERT INTO \`${this.dbName}\`.\`${this.tblName}\` (${fields.join(',')}) VALUES ${fieldsWhere.map((c) => `(${c.join(',')})`).join(", ")} `;
+        return {
+            sql,
+            data: aWhere.length === 1 ? aWhere[0] : aWhere
+        };
+    }
+    /**
      * Generic method for create a insert query and data.
      * @param data {any} Object with data to generate fields to update.
      * @param dataWhere {any} Object with data to generate where.
@@ -127,7 +154,7 @@ class DB {
     CallSelect(callback, e, r) {
         const Respuesta = this.GetResponseEmpty();
         if (e) {
-            logs_1.default.Log(e);
+            logs_1.default.Error(e);
             Respuesta.error.push(e.code);
         }
         else {
@@ -144,11 +171,11 @@ class DB {
     CallBackInsert(callback, e, r) {
         const Respuesta = this.GetResponseEmpty();
         if (e) {
-            logs_1.default.Log(e);
+            logs_1.default.Error(e);
             Respuesta.error.push(e.code);
         }
         else {
-            Respuesta.item = r.result;
+            Respuesta.item = r;
         }
         callback(Respuesta);
     }
@@ -161,13 +188,18 @@ class DB {
     CallUpdate(callback, e, r) {
         const Respuesta = this.GetResponseEmpty();
         if (e) {
-            logs_1.default.Log(e);
+            logs_1.default.Error(e);
             Respuesta.error.push(e.code);
         }
         else {
             Respuesta.item = r.result;
         }
         callback(Respuesta);
+    }
+    IfContainsReplace(str, find, replace) {
+        return (str.search(find) >= 0)
+            ? str.replace(find, replace)
+            : str;
     }
     /**
      * Create empty ResponseG default

@@ -1,3 +1,4 @@
+import { ResponseG } from "./../bd/configFields";
 
 class Utils {
 
@@ -25,9 +26,16 @@ class Utils {
      * @param email {string}. Text to validate for email.
      * @return {boolean}. Return TRUE when is valid email
      */
-    public isEmail =(email:string) => {
+    public isEmail = (email: string) => {
         const expression = /\S+@\S+/
         return expression.test(String(email).toLowerCase())
+    }
+
+    public UnionResponse = (a: ResponseG, b: ResponseG): ResponseG => {
+        a.error = this.UnionArray(a.error, b.error);
+        a.warning = this.UnionArray(a.warning, b.warning);
+        a.info = this.UnionArray(a.info, b.info);
+        return a;
     }
 
 

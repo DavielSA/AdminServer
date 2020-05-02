@@ -9,6 +9,9 @@ exports.ResponseString = {
     PASSWORD_HASH_ERROR: "Error make secure store password",
     PASWORD_INVALID: "Invalid Password",
     NOT_FOUND: "Not FOUND",
-    JSON_MALFORMED: "JSON malformed"
+    JSON_MALFORMED: "JSON malformed",
+    LANG_UNSOPORTED: (str) => `Unsopoerted lang. Show default lang ${str}`,
+    LANG_INVALID: 'The lang received are not valid',
+    GENERIC_NOTFOUND: (str) => `${str} not found`
 };
 //# sourceMappingURL=ResponseString.js.map

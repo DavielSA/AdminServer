@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 
-import Data from './dLangs';
-import Model from './mLang';
+import Data from './dServiceType';
+import Model from './mServiceType';
 
 import { HttpCode } from './../../libs/HttpCode';
 import Auth from './../../libs/Auth';
@@ -13,13 +13,13 @@ class Langs {
     public router: Router;
     constructor() {
         this.router = Router();
-        this.router.get("/langs/get", this.Get);
-        this.router.post("/langs/post", Auth.Verify, this.Post);
-        this.router.put("/langs/put", Auth.Verify, this.Put);
+        this.router.get("/service/types", this.Get);
+        this.router.post("/service/types", Auth.Verify, this.Post);
+        this.router.put("/service/types", Auth.Verify, this.Put);
     }
 
     /**
-     * Method to create a new langs.
+     * Method to create a new services type.
      * @param req {Request}
      * @param res {Response}
      */
@@ -37,7 +37,7 @@ class Langs {
     }
 
     /**
-     * Method update lang.
+     * Method update services type.
      * @param req {Request}
      * @param res {Response}
      */
@@ -54,12 +54,12 @@ class Langs {
     }
 
     /**
-     * Method to filter.
+     * Method to services type.
      * @param req {Request}
      * @param res {Response}
      */
     private Get(req: Request, res: Response) {
-        Data.Get(undefined, (r: ResponseG) => {
+        Data.Get(Data.DefaultEntity(), (r: ResponseG) => {
             return res.status(HttpCode.OK).send(r);
         });
     }
