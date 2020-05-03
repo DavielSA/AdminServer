@@ -88,7 +88,7 @@ Daily Miranda Pardo [dailymp](https://github.com/dailymp/)
 
 ## Wiki 📖
 
-You can find more for how to use this proyect in we [Wiki](url sin definir)
+You can find more for how to use this proyect in we [Wiki](https://github.com/DavielSA/AdminServer/wiki)
 
 ## Version 0.1 📌
 
