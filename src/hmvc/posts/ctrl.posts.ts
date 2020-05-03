@@ -15,10 +15,14 @@ import ModelExtends from './mPostsExtended';
 import { ResponseG } from "./../../bd/configFields";
 import dLangs from './../langs/dLangs';
 import mLang from './../langs/mLang';
+import { clasController, DocEntity, DocFieldsEntity } from "./../../bd/controller";
+import logs from "./../../libs/logs";
 
-class Posts {
+class Posts extends clasController {
     public router: Router;
     constructor() {
+        super();
+
         this.router = Router();
         this.router.get("/posts/:lang", this.Get);
 
@@ -31,8 +35,311 @@ class Posts {
         this.router.put("/posts/update/title/lang", Auth.Verify, this.Put);
 
         this.router.post("/posts/delete/:post", Auth.Verify, this.DeletePost);
+
+        this.Documentation();
+        this.router.get('/help/posts', (req: Request, res: Response) => {
+            return res.status(200).send(this.Doc);
+        });
     }
 
+    private Documentation() {
+        this.Doc = [
+            {
+                controller: "Posts",
+                url: "/posts/:lang",
+                method: "GET",
+                description: "Get all post by lang name",
+                fields: [
+                    {
+                        field: "lang",
+                        require: true,
+                        type: "string",
+                        description: "Name of languague passed in url. Format pretty url"
+                    }
+                ]
+            },
+            {
+                controller: "Posts",
+                url: "/posts/save",
+                method: "POST",
+                description: "Create new posts. Only user auths",
+                fields: [
+                    {
+                        field: "id",
+                        require: false,
+                        type: "number",
+                        description: "Auto numeric number. it's not necesary to create"
+                    },
+                    {
+                        field: "cagegory_id",
+                        require: true,
+                        type: "number",
+                        description: "Id of category to asociate post"
+                    },
+                    {
+                        field: "author",
+                        require: false,
+                        type: "number",
+                        description: "Auto field with session token"
+                    },
+                    {
+                        field: "status",
+                        require: false,
+                        type: "number",
+                        description: "0 => DRAFT || 1 => PUBLISHED || 2 => UNPUBLISHED || 3 => TRASH"
+                    },
+                    {
+                        field: "langs",
+                        require: true,
+                        type: "object",
+                        description: [
+                            {
+                                field: "lang_id",
+                                require: true,
+                                type: "number",
+                                description: "ID of lang"
+                            },
+                            {
+                                field: "title",
+                                require: false,
+                                type: "string",
+                                description: "Title of post in this lang"
+                            },
+                            {
+                                field: "description",
+                                require: false,
+                                type: "string",
+                                description: "Short descriptions for previous show"
+                            },
+                            {
+                                field: "content",
+                                require: false,
+                                type: "string",
+                                description: "All text of posts"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                controller: "Posts",
+                url: "/posts/save/title",
+                method: "POST",
+                description: "Save only basic info for posts",
+                fields: [
+                    {
+                        field: "id",
+                        require: false,
+                        type: "number",
+                        description: "Auto numeric number. it's not necesary to create"
+                    },
+                    {
+                        field: "cagegory_id",
+                        require: true,
+                        type: "number",
+                        description: "Id of category to asociate post"
+                    },
+                    {
+                        field: "author",
+                        require: false,
+                        type: "number",
+                        description: "Auto field with session token"
+                    },
+                    {
+                        field: "status",
+                        require: false,
+                        type: "number",
+                        description: "0 => DRAFT || 1 => PUBLISHED || 2 => UNPUBLISHED || 3 => TRASH"
+                    },
+                ]
+            },
+            {
+                controller: "Posts",
+                url: "/posts/save/title/lang",
+                method: "POST",
+                description: "Save only info langs",
+                fields: [
+                    {
+                        field: "lang_id",
+                        require: true,
+                        type: "number",
+                        description: "ID of lang"
+                    },
+                    {
+                        field: "posts_id",
+                        require: true,
+                        type: "number",
+                        description: "ID of posts"
+                    },
+                    {
+                        field: "title",
+                        require: false,
+                        type: "string",
+                        description: "Title of post in this lang"
+                    },
+                    {
+                        field: "description",
+                        require: false,
+                        type: "string",
+                        description: "Short descriptions for previous show"
+                    },
+                    {
+                        field: "content",
+                        require: false,
+                        type: "string",
+                        description: "All text of posts"
+                    }
+                ]
+            },
+            {
+                controller: "Posts",
+                url: "/posts/update",
+                method: "PUT",
+                description: "Update posts. Only user auths",
+                fields: [
+                    {
+                        field: "id",
+                        require: true,
+                        type: "number",
+                        description: "Id of posts"
+                    },
+                    {
+                        field: "cagegory_id",
+                        require: true,
+                        type: "number",
+                        description: "Id of category to asociate post"
+                    },
+                    {
+                        field: "author",
+                        require: false,
+                        type: "number",
+                        description: "Auto field with session token"
+                    },
+                    {
+                        field: "status",
+                        require: false,
+                        type: "number",
+                        description: "0 => DRAFT || 1 => PUBLISHED || 2 => UNPUBLISHED || 3 => TRASH"
+                    },
+                    {
+                        field: "langs",
+                        require: true,
+                        type: "object",
+                        description: [
+                            {
+                                field: "lang_id",
+                                require: true,
+                                type: "number",
+                                description: "ID of lang"
+                            },
+                            {
+                                field: "title",
+                                require: false,
+                                type: "string",
+                                description: "Title of post in this lang"
+                            },
+                            {
+                                field: "description",
+                                require: false,
+                                type: "string",
+                                description: "Short descriptions for previous show"
+                            },
+                            {
+                                field: "content",
+                                require: false,
+                                type: "string",
+                                description: "All text of posts"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                controller: "Posts",
+                url: "/posts/update/title",
+                method: "POST",
+                description: "Update only basic info for posts",
+                fields: [
+                    {
+                        field: "id",
+                        require: true,
+                        type: "number",
+                        description: "Id of posts"
+                    },
+                    {
+                        field: "cagegory_id",
+                        require: true,
+                        type: "number",
+                        description: "Id of category to asociate post"
+                    },
+                    {
+                        field: "author",
+                        require: false,
+                        type: "number",
+                        description: "Auto field with session token"
+                    },
+                    {
+                        field: "status",
+                        require: false,
+                        type: "number",
+                        description: "0 => DRAFT || 1 => PUBLISHED || 2 => UNPUBLISHED || 3 => TRASH"
+                    },
+                ]
+            },
+            {
+                controller: "Posts",
+                url: "/posts/update/title/lang",
+                method: "POST",
+                description: "Save only info langs",
+                fields: [
+                    {
+                        field: "lang_id",
+                        require: true,
+                        type: "number",
+                        description: "ID of lang"
+                    },
+                    {
+                        field: "posts_id",
+                        require: true,
+                        type: "number",
+                        description: "ID of posts"
+                    },
+                    {
+                        field: "title",
+                        require: false,
+                        type: "string",
+                        description: "Title of post in this lang"
+                    },
+                    {
+                        field: "description",
+                        require: false,
+                        type: "string",
+                        description: "Short descriptions for previous show"
+                    },
+                    {
+                        field: "content",
+                        require: false,
+                        type: "string",
+                        description: "All text of posts"
+                    }
+                ]
+            },
+            {
+                controller: "Posts",
+                url: "/posts/delete/:post",
+                method: "DELETE",
+                description: "Delete post by id in pretty url",
+                fields: [
+                    {
+                        field: "posts",
+                        require: true,
+                        type: "number",
+                        description: "ID of post to delete"
+                    }
+                ]
+            },
+        ]
+    }
     /**
      * Method to create a new service langs.
      * @param req {Request}
@@ -272,7 +579,7 @@ class Posts {
     private Get(req: Request, res: Response) {
         const item: ModelExtends = Data.DefaultEntityExtends();
 
-        item.lang_name = (req.params.lang && req.params.lang)
+        item.lang_name = (req.params && req.params.lang)
             ? req.params.lang
             : Data.DEFAULT_LANG;
 

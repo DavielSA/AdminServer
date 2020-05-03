@@ -9,12 +9,80 @@ const HttpCode_1 = require("./../../libs/HttpCode");
 const ResponseString_1 = require("./../../libs/ResponseString");
 const Auth_1 = __importDefault(require("./../../libs/Auth"));
 const dUserHistory_1 = __importDefault(require("./dUserHistory"));
-class User {
+const controller_1 = require("./../../bd/controller");
+class User extends controller_1.clasController {
     constructor() {
+        super();
         this.router = express_1.Router();
         this.router.post("/register", this.Register);
         this.router.post("/user/login", this.Login);
         this.router.get("/user/logout", Auth_1.default.Verify, this.Logout);
+        this.Documentation();
+        this.router.get('/help/service/types', (req, res) => {
+            return res.status(200).send(this.Doc);
+        });
+    }
+    Documentation() {
+        this.Doc = [
+            {
+                controller: "User",
+                url: "/register",
+                method: "POST",
+                description: "Create new user",
+                fields: [
+                    {
+                        field: "id",
+                        require: false,
+                        type: "number",
+                        description: "Auto numeric number. it's not necesary to create"
+                    },
+                    {
+                        field: "email",
+                        require: true,
+                        type: "string",
+                        description: "Email of client"
+                    },
+                    {
+                        field: "password",
+                        require: true,
+                        type: "string",
+                        description: "Password top secret of client"
+                    },
+                    {
+                        field: "name",
+                        require: false,
+                        type: "string",
+                        description: "Name of client"
+                    },
+                    {
+                        field: "permissions",
+                        require: false,
+                        type: "number",
+                        description: "Id of permission of client. By default is 0"
+                    }
+                ]
+            },
+            {
+                controller: "User",
+                url: "/user/login",
+                method: "POST",
+                description: "Method to autenticate user. This return JWT when login is true",
+                fields: [
+                    {
+                        field: "email",
+                        require: true,
+                        type: "string",
+                        description: "Email of client"
+                    },
+                    {
+                        field: "password",
+                        require: true,
+                        type: "string",
+                        description: "Password top secret of client"
+                    }
+                ]
+            }
+        ];
     }
     /**
      * Method to create a new user.

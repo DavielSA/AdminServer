@@ -8,15 +8,86 @@ import { ResponseString } from './../../libs/ResponseString';
 import Auth from './../../libs/Auth';
 import { ResponseG } from "./../../bd/configFields";
 import dUserHistory from "./dUserHistory";
+import { clasController, DocEntity, DocFieldsEntity } from "./../../bd/controller";
 
-
-class User {
+class User extends clasController {
     public router: Router;
     constructor() {
+        super();
+
         this.router = Router();
         this.router.post("/register", this.Register);
         this.router.post("/user/login", this.Login);
         this.router.get("/user/logout",Auth.Verify,this.Logout);
+
+        this.Documentation();
+
+        this.router.get('/help/service/types', (req: Request, res: Response) => {
+            return res.status(200).send(this.Doc);
+        });
+    }
+
+    private Documentation() {
+        this.Doc = [
+            {
+                controller: "User",
+                url: "/register",
+                method: "POST",
+                description: "Create new user",
+                fields: [
+                    {
+                        field: "id",
+                        require: false,
+                        type: "number",
+                        description: "Auto numeric number. it's not necesary to create"
+                    },
+                    {
+                        field: "email",
+                        require: true,
+                        type: "string",
+                        description: "Email of client"
+                    },
+                    {
+                        field: "password",
+                        require: true,
+                        type: "string",
+                        description: "Password top secret of client"
+                    },
+                    {
+                        field: "name",
+                        require: false,
+                        type: "string",
+                        description: "Name of client"
+                    },
+                    {
+                        field: "permissions",
+                        require: false,
+                        type: "number",
+                        description: "Id of permission of client. By default is 0"
+                    }
+                ]
+            },
+            {
+                controller: "User",
+                url: "/user/login",
+                method: "POST",
+                description: "Method to autenticate user. This return JWT when login is true",
+                fields: [
+                    {
+                        field: "email",
+                        require: true,
+                        type: "string",
+                        description: "Email of client"
+                    },
+                    {
+                        field: "password",
+                        require: true,
+                        type: "string",
+                        description: "Password top secret of client"
+                    }
+                ]
+            }
+        ]
     }
 
     /**

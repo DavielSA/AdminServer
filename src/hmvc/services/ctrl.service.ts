@@ -20,11 +20,13 @@ import dLangs from './../langs/dLangs';
 import mLang from './../langs/mLang';
 import mServicePrice from "./mServicePrices";
 import mService from "./mService";
+import { clasController, DocEntity, DocFieldsEntity } from "./../../bd/controller";
 
-
-class Service {
+class Service extends clasController {
     public router: Router;
     constructor() {
+        super();
+
         this.router = Router();
         this.router.get("/service/:lang", this.Get);
 
@@ -42,6 +44,285 @@ class Service {
 
         this.router.post("/service/delete/:service", Auth.Verify, this.DeleteService);
         this.router.delete("/service/delete/price/:service/:months", Auth.Verify, this.DeletePrice);
+
+        this.Documentation();
+        this.router.get('/help/posts', (req: Request, res: Response) => {
+            return res.status(200).send(this.Doc);
+        });
+    }
+    private Documentation() {
+        this.Doc = [
+            {
+                controller: "Service",
+                url: "/service/:lang",
+                method: "GET",
+                description: "Get all service by lang name",
+                fields: [
+                    {
+                        field: "lang",
+                        require: true,
+                        type: "string",
+                        description: "Name of languague passed in url. Format pretty url"
+                    }
+                ]
+            },
+            {
+                controller: "Service",
+                url: "/service/save",
+                method: "POST",
+                description: "Create new service. Only user auths",
+                fields: [
+                    {
+                        field: "id",
+                        require: false,
+                        type: "number",
+                        description: "Auto numeric number. it's not necesary to create"
+                    },
+                    {
+                        field: "type_id",
+                        require: true,
+                        type: "number",
+                        description: "Id of type to asociate service"
+                    },
+                    {
+                        field: "name",
+                        require: true,
+                        type: "string",
+                        description: "Name of service"
+                    },
+                    {
+                        field: "langs",
+                        require: true,
+                        type: "object",
+                        description: [
+                            {
+                                field: "lang_id",
+                                require: true,
+                                type: "number",
+                                description: "ID of lang"
+                            },
+                            {
+                                field: "name",
+                                require: true,
+                                type: "string",
+                                description: "Title of service in this lang"
+                            },
+                            {
+                                field: "description",
+                                require: false,
+                                type: "string",
+                                description: "Short descriptions for previous show"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                controller: "Service",
+                url: "/service/save/title",
+                method: "POST",
+                description: "Save only basic info for service",
+                fields: [
+                    {
+                        field: "lang_id",
+                        require: true,
+                        type: "number",
+                        description: "ID of lang"
+                    },
+                    {
+                        field: "service_id",
+                        require: true,
+                        type: "number",
+                        description: "ID of service"
+                    },
+                    {
+                        field: "name",
+                        require: true,
+                        type: "string",
+                        description: "Title of service in this lang"
+                    },
+                    {
+                        field: "description",
+                        require: false,
+                        type: "string",
+                        description: "Short descriptions for previous show"
+                    }
+                ]
+            },
+            {
+                controller: "Service",
+                url: "/service/save/title/lang",
+                method: "POST",
+                description: "Save only info langs",
+                fields: [
+                    {
+                        field: "lang_id",
+                        require: true,
+                        type: "number",
+                        description: "ID of lang"
+                    },
+                    {
+                        field: "posts_id",
+                        require: true,
+                        type: "number",
+                        description: "ID of posts"
+                    },
+                    {
+                        field: "title",
+                        require: false,
+                        type: "string",
+                        description: "Title of post in this lang"
+                    },
+                    {
+                        field: "description",
+                        require: false,
+                        type: "string",
+                        description: "Short descriptions for previous show"
+                    },
+                    {
+                        field: "content",
+                        require: false,
+                        type: "string",
+                        description: "All text of posts"
+                    }
+                ]
+            },
+            {
+                controller: "Service",
+                url: "/service/update",
+                method: "PUT",
+                description: "Update Service. Only user auths",
+                fields: [
+                    {
+                        field: "id",
+                        require: true,
+                        type: "number",
+                        description: "Auto numeric number. it's not necesary to create"
+                    },
+                    {
+                        field: "type_id",
+                        require: true,
+                        type: "number",
+                        description: "Id of type to asociate service"
+                    },
+                    {
+                        field: "name",
+                        require: true,
+                        type: "string",
+                        description: "Name of service"
+                    },
+                    {
+                        field: "langs",
+                        require: true,
+                        type: "object",
+                        description: [
+                            {
+                                field: "lang_id",
+                                require: true,
+                                type: "number",
+                                description: "ID of lang"
+                            },
+                            {
+                                field: "name",
+                                require: true,
+                                type: "string",
+                                description: "Title of service in this lang"
+                            },
+                            {
+                                field: "description",
+                                require: false,
+                                type: "string",
+                                description: "Short descriptions for previous show"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                controller: "Service",
+                url: "/service/update/title",
+                method: "POST",
+                description: "Update only basic info for posts",
+                fields: [
+                    {
+                        field: "lang_id",
+                        require: true,
+                        type: "number",
+                        description: "ID of lang"
+                    },
+                    {
+                        field: "service_id",
+                        require: true,
+                        type: "number",
+                        description: "ID of service"
+                    },
+                    {
+                        field: "name",
+                        require: true,
+                        type: "string",
+                        description: "Title of service in this lang"
+                    },
+                    {
+                        field: "description",
+                        require: false,
+                        type: "string",
+                        description: "Short descriptions for previous show"
+                    }
+                ]
+            },
+            {
+                controller: "Service",
+                url: "/service/update/title/lang",
+                method: "POST",
+                description: "Save only info langs",
+                fields: [
+                    {
+                        field: "lang_id",
+                        require: true,
+                        type: "number",
+                        description: "ID of lang"
+                    },
+                    {
+                        field: "service_id",
+                        require: true,
+                        type: "number",
+                        description: "ID of service"
+                    },
+                    {
+                        field: "title",
+                        require: false,
+                        type: "string",
+                        description: "Title of post in this lang"
+                    },
+                    {
+                        field: "description",
+                        require: false,
+                        type: "string",
+                        description: "Short descriptions for previous show"
+                    },
+                    {
+                        field: "content",
+                        require: false,
+                        type: "string",
+                        description: "All text of posts"
+                    }
+                ]
+            },
+            {
+                controller: "Service",
+                url: "/service/delete/:post",
+                method: "DELETE",
+                description: "Delete post by id in pretty url",
+                fields: [
+                    {
+                        field: "posts",
+                        require: true,
+                        type: "number",
+                        description: "ID of post to delete"
+                    }
+                ]
+            },
+        ]
     }
 
     /**

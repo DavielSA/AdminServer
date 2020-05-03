@@ -1,13 +1,30 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-class Home {
+const controller_1 = require("./../../bd/controller");
+class Home extends controller_1.clasController {
     constructor() {
+        super();
         this.router = express_1.Router();
         this.router.get("/", this.Home);
         this.router.get("/:message", this.HomeMessage);
         this.router.post("/home", this.Post);
         this.router.put("/home", this.Put);
+        this.Documentation();
+        this.router.get('/help/home', (req, res) => {
+            return res.status(200).send(this.Doc);
+        });
+    }
+    Documentation() {
+        this.Doc = [
+            {
+                controller: "Home",
+                url: "/",
+                method: "GET",
+                description: "",
+                fields: []
+            }
+        ];
     }
     /**
      * Method to save element.
