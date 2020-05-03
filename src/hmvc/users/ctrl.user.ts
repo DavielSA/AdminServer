@@ -22,7 +22,7 @@ class User extends clasController {
 
         this.Documentation();
 
-        this.router.get('/help/service/types', (req: Request, res: Response) => {
+        this.router.get('/help/user', (req: Request, res: Response) => {
             return res.status(200).send(this.Doc);
         });
     }
